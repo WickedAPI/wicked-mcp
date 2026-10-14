@@ -2,8 +2,8 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.choaticpixels/wicked-mcp",
   "title": "Wicked MCP",
-  "description": "The whole Wicked suite for agents: trading, DeFi/token risk, identity, reputation, memory. x402.",
-  "version": "1.3.0",
+  "description": "Whole Wicked suite for agents: market data, SEC filings, wallet checks, risk, identity, memory.",
+  "version": "1.4.0",
   "websiteUrl": "https://mcp.wickedapi.com",
   "repository": {
     "url": "https://github.com/choaticpixels/wicked-mcp",
