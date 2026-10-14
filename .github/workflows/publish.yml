@@ -1,19 +1,43 @@
-name: Publish wickedapi-mcp (forwarding shim)
+name: Publish to npm
 
-# Publishes the tiny `wickedapi-mcp` forwarding package in ./shim to npm via
-# trusted publishing (OIDC): no token or one-time code. The trusted publisher is
-# configured on npmjs.com for `wickedapi-mcp` -> GitHub Actions ->
-# choaticpixels/wicked-mcp, workflow publish.yml. The real package,
-# @wickedlabs/wicked-mcp, is published separately.
+# Publishes via npm trusted publishing (OIDC): no token or one-time code.
+# Trusted publishers are configured on npmjs.com, pointing at
+# choaticpixels/wicked-mcp and this workflow file (publish.yml), for:
+#   - wickedapi-mcp           (forwarding shim in ./shim)
+#   - @wickedlabs/wicked-mcp  (the real server, repo root)
+# Run main before the shim so the shim's dependency exists on the registry.
 on:
   workflow_dispatch:
+    inputs:
+      target:
+        description: Which package to publish
+        type: choice
+        options: [both, main, shim]
+        default: both
 
 permissions:
   contents: read
   id-token: write # required for trusted publishing and provenance
 
 jobs:
-  publish:
+  publish-main:
+    if: inputs.target == 'both' || inputs.target == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      # Trusted publishing needs npm >= 11.5.1 (Node 22 ships npm 10).
+      - run: npm install -g npm@^11.5.1
+      - run: npm ci
+      - run: npm run build
+      - run: npm publish --access public --provenance
+
+  publish-shim:
+    if: always() && (inputs.target == 'both' || inputs.target == 'shim') && (needs.publish-main.result == 'success' || needs.publish-main.result == 'skipped')
+    needs: publish-main
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -24,6 +48,5 @@ jobs:
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
-      # Trusted publishing needs npm >= 11.5.1 (Node 22 ships npm 10).
       - run: npm install -g npm@^11.5.1
       - run: npm publish --access public --provenance
