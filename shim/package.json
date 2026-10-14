@@ -1,6 +1,6 @@
 {
   "name": "wickedapi-mcp",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "MOVED: this package is now @wickedlabs/wicked-mcp. This release forwards to it, so existing `npx wickedapi-mcp` setups keep working.",
   "type": "module",
   "bin": {
@@ -11,7 +11,7 @@
     "README.md"
   ],
   "dependencies": {
-    "@wickedlabs/wicked-mcp": "^0.5.0"
+    "@wickedlabs/wicked-mcp": "^0.6.0"
   },
   "engines": {
     "node": ">=20"
