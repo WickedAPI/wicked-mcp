@@ -13,6 +13,8 @@ const GROUPS: { id: string; label: string; prefix?: string; blurb: string }[] = 
   { id: "identity", label: "Wicked Identity", prefix: "identity_", blurb: "Know-Your-Agent verification with signed assertions." },
   { id: "sanity", label: "Wicked Sanity", prefix: "sanity_", blurb: "Hallucination check against your source or live web evidence." },
   { id: "memory", label: "Wicked Memory", prefix: "memory_", blurb: "Persistent, wallet-scoped agent memory with semantic search." },
+  { id: "filings", label: "Filings Oracle", prefix: "filings_", blurb: "Real-time SEC alerts: 8-K events classified by item, Form 4 insider trades, 13D/13G, 10-K, 10-Q." },
+  { id: "wallet", label: "Wallet Oracle", prefix: "wallet_", blurb: "Counterparty check: OFAC sanctions, malicious-address flags and on-chain profile for any EVM wallet." },
   { id: "paywall", label: "x402 Paywall", prefix: "paywall_", blurb: "Put any endpoint behind pay-per-call USDC." },
 ];
 
@@ -26,7 +28,7 @@ function grouped(tools: string[]) {
     return { ...g, tools: names };
   });
   const trading = tools.filter((t) => !claimed.has(t));
-  return [{ id: "trading", label: "Trading Data API", blurb: "Prices, OHLCV, indicators, funding/OI, macro, prediction markets, momentum score.", tools: trading }, ...out];
+  return [{ id: "trading", label: "Trading Data API", blurb: "Prices, OHLCV, indicators, funding/OI, macro, prediction markets, momentum score, plus on-chain reads (balances, blocks, nonces, ENS, transactions).", tools: trading }, ...out];
 }
 
 export function llmsTxt(tools: string[], version: string): string {
@@ -34,7 +36,7 @@ export function llmsTxt(tools: string[], version: string): string {
   return [
     "# Wicked MCP",
     "",
-    `> One MCP server for the whole Wicked suite: ${tools.length} tools across ${g.length} services - market data, DeFi and token risk, brokerage sync, agent identity, reputation, tool registry, hallucination checks, persistent memory and x402 paywalls. Version ${version}.`,
+    `> One MCP server for the whole Wicked suite: ${tools.length} tools across ${g.length} services - market data, on-chain reads, SEC filings alerts, wallet and sanctions checks, DeFi and token risk, brokerage sync, agent identity, reputation, tool registry, hallucination checks, persistent memory and x402 paywalls. Version ${version}.`,
     "",
     "## Connect",
     `- Remote (streamable HTTP, no install): ${SITE}/mcp`,

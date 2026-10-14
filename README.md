@@ -2,14 +2,16 @@
 
 MCP server for the whole [Wicked](https://wickedapi.com) suite — trading data, DeFi protocol health, token safety, brokerage sync, agent identity, reputation, a tool-reliability registry, hallucination checks, persistent agent memory, and x402 paywalls, in one server.
 
-**75 tools** across 10 live services. The first four are generated automatically from each service's own live `openapi.json`, so the list always matches what's deployed; the rest are hand-written because they use wallet signatures and non-`/v1` routes:
+**90 tools** across 12 live services. The first four are generated automatically from each service's own live `openapi.json`, so the list always matches what's deployed; the rest are hand-written because they use wallet signatures and non-`/v1` routes:
 
 | Service | Tools | Auth |
 | --- | --- | --- |
-| [Trading Data API](https://api.wickedapi.com) | 22 (unprefixed: `price`, `ohlcv`, `fvg`, `momentum_score`, `sentiment`, `macro_calendar`, …) | API key or x402, 5 free |
+| [Trading Data API](https://api.wickedapi.com) | 28 (unprefixed: `price`, `ohlcv`, `fvg`, `momentum_score`, `macro_calendar`, …, plus on-chain reads `chain_balance`, `chain_token_balance`, `chain_nonce`, `chain_block`, `chain_ens`, `chain_tx`) | API key or x402, 5 free |
 | [Protocol Health Oracle](https://protocol-health-oracle.wickedapi.com) | 6 (`protocol_health_*`) | API key or x402, scoreboard free |
 | [Token Risk Oracle](https://token-risk-oracle.wickedapi.com) | 1 (`token_risk`) | 100% free, no key |
 | [Broker Sync API](https://broker-sync-api.wickedapi.com) | 6 (`broker_sync_*`) | API key or x402 |
+| [Filings Oracle](https://filings.wickedapi.com) | 7 (`filings_search`, `filings_8k_events`, `filings_insider_trades`, `filings_insider_summary`, …) | freshness + preview free; rest key or x402 |
+| [Wallet Oracle](https://wallet.wickedapi.com) | 2 (`wallet_sanctions_check`, `wallet_check`) | OFAC sanctions lookup free; full check key or x402 |
 | [Wicked Reputation](https://stake.wickedapi.com) | 5 (`reputation_*`) | free, no key |
 | [Wicked Registry](https://registry.wickedapi.com) | 6 (`registry_*`) | search/detail: key or x402; featured/badge/report free; register needs your signature |
 | [Wicked Identity](https://verify.wickedapi.com) | 8 (`identity_*`) | no wallet? start with `identity_sandbox_register` (no signing); free test key via `identity_get_test_key`; real-wallet calls need your signature over a nonce |
@@ -23,7 +25,7 @@ These tools never sign anything or hold a key. Agents with no wallet can still t
 
 ## Remote endpoint (no install)
 
-The same 75 tools are served over streamable HTTP at **`https://mcp.wickedapi.com/mcp`** (stateless, rate-limited per IP; the public deployment carries no personal keys, so paid calls return the x402 challenge). Point any streamable-HTTP MCP client at it. To self-host, build the `Dockerfile` (or `npm run build && npm run start:http`); see `.env.example` for `RATE_LIMIT_PER_MINUTE`, `ALLOWED_HOSTS` and `TRUSTED_CLIENT_IP_HEADER`.
+The same 90 tools are served over streamable HTTP at **`https://mcp.wickedapi.com/mcp`** (stateless, rate-limited per IP; the public deployment carries no personal keys, so paid calls return the x402 challenge). Point any streamable-HTTP MCP client at it. To self-host, build the `Dockerfile` (or `npm run build && npm run start:http`); see `.env.example` for `RATE_LIMIT_PER_MINUTE`, `ALLOWED_HOSTS` and `TRUSTED_CLIENT_IP_HEADER`.
 
 ## No signup required
 
