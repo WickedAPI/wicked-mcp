@@ -14,14 +14,14 @@ Copy-paste blocks for glama.ai, smithery.ai, and anywhere else that takes a name
 
 Alt taglines:
 - Give your agent a Base wallet. It pays for trading data, DeFi risk checks, and brokerage sync itself.
-- 75 tools across trading data, DeFi safety, and brokerage sync — before you've made an account.
+- 90 tools across trading data, DeFi safety, and brokerage sync — before you've made an account.
 - The MCP server that never asks you to sign up.
 
 ---
 
 ## Short description (~200 chars, for cards/previews)
 
-Real-time trading data, DeFi protocol health, token scam/rug-checks, and brokerage sync for agents — 75 tools, 6 resources, 3 workflow prompts. Configure one Base wallet key and it just works. No signup, no dashboard, no subscription.
+Real-time trading data, DeFi protocol health, token scam/rug-checks, and brokerage sync for agents — 90 tools, 6 resources, 3 workflow prompts. Configure one Base wallet key and it just works. No signup, no dashboard, no subscription.
 
 ---
 
@@ -33,9 +33,11 @@ Most APIs make you sign up, generate a key, and manage a subscription before you
 
 Don't have a wallet handy? It still works. Call any priced tool with no credentials at all and you'll get back the real x402 payment challenge (price, network, `payTo` address) instead of a dead end — and the token-risk tool is free no matter what.
 
-**75 tools across 10 live services, generated live from each service's own OpenAPI spec** — so this listing never drifts out of sync with what's actually deployed:
+**90 tools across 12 live services, generated live from each service's own OpenAPI spec** — so this listing never drifts out of sync with what's actually deployed:
 
-- **Trading Data API** (22 tools) — spot price & OHLCV for crypto and US equities/ETFs, Wilder ATR, Fair Value Gaps (standard ICT/LuxAlgo), ICT liquidity levels, perp funding/OI, long/short ratios, order-book depth, spot-vs-perp basis, Hyperliquid, Kalshi prediction markets, DeFi TVL, crypto Fear & Greed, a verified FOMC/CPI/jobs macro calendar, an earnings calendar, Ethereum gas, US Treasury yields, market clock, global crypto stats, and an AI momentum score across 10 liquid assets.
+- **Trading Data API** (28 tools, incl. 6 on-chain reads: balances, token balances, nonces, blocks, ENS, transactions) — spot price & OHLCV for crypto and US equities/ETFs, Wilder ATR, Fair Value Gaps (standard ICT/LuxAlgo), ICT liquidity levels, perp funding/OI, long/short ratios, order-book depth, spot-vs-perp basis, Hyperliquid, Kalshi prediction markets, DeFi TVL, crypto Fear & Greed, a verified FOMC/CPI/jobs macro calendar, an earnings calendar, Ethereum gas, US Treasury yields, market clock, global crypto stats, and an AI momentum score across 10 liquid assets.
+- **Filings Oracle** (7 tools) - real-time SEC EDGAR alerts: 8-K events classified by item and category, Form 4 insider trades parsed per transaction, 13D/13G, 10-K, 10-Q, with a long-poll cursor for push-like latency.
+- **Wallet Oracle** (2 tools) - counterparty check: free OFAC SDN sanctions lookup, plus OFAC + malicious-address flags + on-chain profile with a plain go/no-go recommendation.
 - **Protocol Health Oracle** (6 tools) — live-scored DeFi protocol health across the full DefiLlama universe: GitHub activity, TVL trend, and treasury signals. Vet a dependency before you integrate it.
 - **Token Risk Oracle** (1 tool, always free) — real on-chain scam/rug-check signals for any EVM or Solana token contract: honeypot detection, mint authority, holder/LP concentration, trust-list status.
 - **Wicked Reputation, Registry, Identity, Sanity** (24 tools) — on-chain agent reputation, reliability scores for x402/MCP tools, Know-Your-Agent verification, and hallucination checks. **x402 Paywall** (8 tools) — put any endpoint behind pay-per-call USDC.

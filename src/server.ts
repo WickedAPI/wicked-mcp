@@ -25,6 +25,8 @@ const SERVICES: ServiceDef[] = [
   { id: "protocol_health", name: "Protocol Health Oracle", baseUrl: envUrl("WICKEDAPI_PROTOCOL_HEALTH_URL", "https://protocol-health-oracle.wickedapi.com") },
   { id: "token_risk", name: "Token Risk Oracle", baseUrl: envUrl("WICKEDAPI_TOKEN_RISK_URL", "https://token-risk-oracle.wickedapi.com") },
   { id: "broker_sync", name: "Broker Sync API", baseUrl: envUrl("WICKEDAPI_BROKER_SYNC_URL", "https://broker-sync-api.wickedapi.com") },
+  { id: "filings", name: "Filings Oracle", baseUrl: envUrl("WICKEDAPI_FILINGS_URL", "https://filings.wickedapi.com") },
+  { id: "wallet", name: "Wallet Oracle", baseUrl: envUrl("WICKEDAPI_WALLET_URL", "https://wallet.wickedapi.com") },
 ];
 const SHOWCASE_URL = envUrl("WICKEDAPI_SHOWCASE_URL", "https://wickedapi.com");
 
@@ -44,6 +46,13 @@ const TOOL_NAME_OVERRIDES: Record<string, Record<string, string>> = {
   },
   broker_sync: {
     "POST /v1/users": "broker_sync_register_user",
+  },
+  filings: {
+    "GET /v1/filings": "filings_search",
+  },
+  wallet: {
+    "GET /v1/wallet-check": "wallet_check",
+    "GET /v1/sanctions-check": "wallet_sanctions_check",
   },
 };
 
@@ -381,7 +390,7 @@ function registerPrompts(server: McpServer) {
 }
 
 
-export const SERVER_VERSION = "0.5.0";
+export const SERVER_VERSION = "0.6.0";
 
 // Everything expensive or network-bound happens once, in loadWorld(): the
 // payer-wallet fetcher and the OpenAPI specs of the generated services.
