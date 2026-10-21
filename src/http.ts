@@ -11,6 +11,7 @@ import { rateLimited } from "./rateLimit.js";
 import { landingHtml, llmsTxt, serverCard } from "./landing.js";
 import { knownTools, usageHooks, usageSnapshot } from "./usage.js";
 import { buildServer, loadWorld, SERVER_VERSION } from "./server.js";
+import { configuredKeys } from "./suite.js";
 import { captureServerError, flushSentry, initSentry } from "./observability.js";
 
 initSentry(SERVER_VERSION);
@@ -108,7 +109,11 @@ async function main() {
     }
   });
 
-  http.listen(PORT, "0.0.0.0", () => console.error(`[wickedapi-mcp] http on :${PORT}/mcp - ${summary}.`));
+  http.listen(PORT, "0.0.0.0", () => {
+    console.error(`[wickedapi-mcp] http on :${PORT}/mcp - ${summary}.`);
+    const keys = Object.entries(configuredKeys()).map(([k, v]) => `${k}=${v ? "set" : "MISSING"}`);
+    console.error(`[wickedapi-mcp] upstream api keys: ${keys.join(" ")}`);
+  });
 }
 
 main().catch((err) => {
