@@ -22,7 +22,7 @@
   "mcpName": "io.github.choaticpixels/wicked-mcp",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/choaticpixels/wicked-mcp.git",
+    "url": "git+https://github.com/WickedAPI/wicked-mcp.git",
     "directory": "shim"
   },
   "keywords": ["mcp", "model-context-protocol", "wicked", "x402"]

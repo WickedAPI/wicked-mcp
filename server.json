@@ -6,7 +6,7 @@
   "version": "1.4.0",
   "websiteUrl": "https://mcp.wickedapi.com",
   "repository": {
-    "url": "https://github.com/choaticpixels/wicked-mcp",
+    "url": "https://github.com/WickedAPI/wicked-mcp",
     "source": "github"
   },
   "packages": [
