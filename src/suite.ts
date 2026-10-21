@@ -28,6 +28,18 @@ const SANITY_API_KEY = process.env.SANITY_API_KEY || "";
 const MEMORY_API_KEY = process.env.MEMORY_API_KEY || "";
 const PAYWALL_API_KEY = process.env.PAYWALL_API_KEY || "";
 
+/** Which upstream API keys this process has (yes/no only, never the values). */
+export function configuredKeys(): Record<string, boolean> {
+  return {
+    wickedapi: Boolean(process.env.WICKEDAPI_API_KEY),
+    registry: Boolean(REGISTRY_API_KEY),
+    identity: Boolean(IDENTITY_API_KEY),
+    sanity: Boolean(SANITY_API_KEY),
+    memory: Boolean(MEMORY_API_KEY),
+    paywall: Boolean(PAYWALL_API_KEY),
+  };
+}
+
 const DEFAULT_TIMEOUT_MS = 20_000;
 const SANITY_TIMEOUT_MS = 90_000; // open mode runs a live web search per claim
 
@@ -90,7 +102,17 @@ async function call(method: string, base: string, path: string, opts: ReqOpts = 
     init.body = JSON.stringify(clean(opts.json));
   }
   try {
-    return await finalize(await fetch(url.toString(), init));
+    const body = await finalize(await fetch(url.toString(), init));
+    // These services answer 402 both when no key is sent and when a key is
+    // rejected, so the status alone can't say which. Say what THIS server did
+    // (never the key itself), so an agent or operator can tell the cases apart.
+    if (body.http_status === 402) {
+      const sentKey = Boolean(headers["x-api-key"] || headers["authorization"]);
+      body.auth_hint = sentKey
+        ? "An API key was sent with this request but the service still asked for payment. These services return 402 for a rejected key too, so the key configured on this server is probably invalid, revoked or out of quota. Pay via x402 instead, or tell the server operator."
+        : "No API key was sent with this request: none is configured on this server for this service. Pay via x402, or tell the server operator.";
+    }
+    return body;
   } catch (err) {
     return { error: (err as Error).message, source: "mcp", http_status: 502 };
   }

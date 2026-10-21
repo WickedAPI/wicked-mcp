@@ -19,7 +19,7 @@
   "license": "MIT",
   "author": "WickedLabs",
   "homepage": "https://mcp.wickedapi.com",
-  "mcpName": "io.github.choaticpixels/wicked-mcp",
+  "mcpName": "io.github.wickedapi/wicked-mcp",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/WickedAPI/wicked-mcp.git",

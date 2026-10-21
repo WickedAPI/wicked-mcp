@@ -2,7 +2,7 @@ name: Publish to npm
 
 # Publishes via npm trusted publishing (OIDC): no token or one-time code.
 # Trusted publishers are configured on npmjs.com, pointing at
-# choaticpixels/wicked-mcp and this workflow file (publish.yml), for:
+# WickedAPI/wicked-mcp and this workflow file (publish.yml), for:
 #   - wickedapi-mcp           (forwarding shim in ./shim)
 #   - @wickedlabs/wicked-mcp  (the real server, repo root)
 # Run main before the shim so the shim's dependency exists on the registry.
