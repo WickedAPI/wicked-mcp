@@ -1,6 +1,6 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.wickedapi/wicked-mcp",
+  "name": "io.github.WickedAPI/wicked-mcp",
   "title": "Wicked MCP",
   "description": "Whole Wicked suite for agents: market data, SEC filings, wallet checks, risk, identity, memory.",
   "version": "1.5.0",
@@ -13,7 +13,7 @@
     {
       "registryType": "npm",
       "identifier": "@wickedlabs/wicked-mcp",
-      "version": "0.6.1",
+      "version": "0.6.2",
       "transport": {
         "type": "stdio"
       },
