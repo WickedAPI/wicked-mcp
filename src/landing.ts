@@ -53,7 +53,7 @@ export function llmsTxt(tools: string[], version: string): string {
     "",
     "## Links",
     "- Platform: https://wickedapi.com (service directory at https://wickedapi.com/services.json)",
-    "- Source: https://github.com/choaticpixels/wicked-mcp",
+    "- Source: https://github.com/WickedAPI/wicked-mcp",
     "- npm: https://www.npmjs.com/package/@wickedlabs/wicked-mcp",
     "- Registry: io.github.choaticpixels/wicked-mcp on https://registry.modelcontextprotocol.io",
     "- Server card: " + SITE + "/.well-known/mcp/server-card.json",
@@ -70,7 +70,7 @@ export function serverCard(tools: string[], version: string) {
     protocolVersion: "2025-06-18",
     serverInfo: { name: "io.github.choaticpixels/wicked-mcp", title: "Wicked MCP", version },
     description: `The whole Wicked suite for agents: ${tools.length} tools across market data, DeFi/token risk, identity, reputation, registry, sanity checks, memory and paywalls. x402-native.`,
-    documentationUrl: "https://github.com/choaticpixels/wicked-mcp",
+    documentationUrl: "https://github.com/WickedAPI/wicked-mcp",
     transport: { type: "streamable-http", endpoint: "/mcp" },
     capabilities: { tools: { listChanged: false }, resources: {}, prompts: {} },
     authentication: { required: false, note: "Optional keys unlock free tiers; otherwise paid calls return an x402 challenge." },
@@ -103,6 +103,6 @@ code{display:block;margin-top:8px;font-size:13px;color:var(--mut);word-break:bre
 <p>No signup. Priced calls return a real x402 payment challenge (USDC on Base). The public endpoint is rate limited per IP.</p>
 <h3>What's inside</h3>
 ${rows}
-<footer><a href="https://wickedapi.com">wickedapi.com</a> &middot; <a href="https://github.com/choaticpixels/wicked-mcp">GitHub</a> &middot; <a href="https://www.npmjs.com/package/@wickedlabs/wicked-mcp">npm</a> &middot; <a href="/llms.txt">llms.txt</a> &middot; <a href="/.well-known/mcp/server-card.json">server card</a> &middot; <a href="/stats">usage</a></footer>
+<footer><a href="https://wickedapi.com">wickedapi.com</a> &middot; <a href="https://github.com/WickedAPI/wicked-mcp">GitHub</a> &middot; <a href="https://www.npmjs.com/package/@wickedlabs/wicked-mcp">npm</a> &middot; <a href="/llms.txt">llms.txt</a> &middot; <a href="/.well-known/mcp/server-card.json">server card</a> &middot; <a href="/stats">usage</a></footer>
 </main></body></html>`;
 }

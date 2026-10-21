@@ -8,4 +8,4 @@ This release only forwards to it, so existing setups keep working. Please update
 { "command": "npx", "args": ["-y", "@wickedlabs/wicked-mcp"] }
 ```
 
-Hosted (no install): `https://mcp.wickedapi.com/mcp` · Source: https://github.com/choaticpixels/wicked-mcp
+Hosted (no install): `https://mcp.wickedapi.com/mcp` · Source: https://github.com/WickedAPI/wicked-mcp
