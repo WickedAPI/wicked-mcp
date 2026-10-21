@@ -1,0 +1,24 @@
+name: Publish to the MCP Registry
+
+# Publishes server.json to https://registry.modelcontextprotocol.io using
+# GitHub OIDC: the registry trusts GitHub's proof that this run belongs to the
+# WickedAPI org, so no personal login, token or OAuth app approval is needed.
+# Run manually from the Actions tab after bumping server.json's version.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # required for `mcp-publisher login github-oidc`
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install mcp-publisher
+        run: |
+          curl -sSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
+      - run: ./mcp-publisher validate
+      - run: ./mcp-publisher login github-oidc
+      - run: ./mcp-publisher publish
