@@ -81,3 +81,15 @@ test("front door: landing page, llms.txt, server card, prompts and usage stats",
   assert.ok(stats.tools.some((t) => t.tool === "reputation_tiers"));
   assert.ok(!JSON.stringify(stats).includes("0x0000"), "stats must not contain arguments");
 });
+
+test("an unpaid priced call returns the decoded x402 price, not an empty error", async () => {
+  const c = new Client({ name: "e2e3", version: "1" });
+  await c.connect(new StreamableHTTPClientTransport(new URL(`http://localhost:${PORT}/mcp`)));
+  const r = await c.callTool({ name: "atr", arguments: { symbol: "BTC" } });
+  const body = JSON.parse(r.content[0].text);
+  assert.equal(body.http_status, 402);
+  assert.ok(body.payment_required?.accepts?.length, "payment_required must be decoded from the Payment-Required header");
+  assert.ok(body.how_to_pay);
+  assert.equal(r.isError, false, "a 402 is a price, not a tool failure");
+  await c.close();
+});
