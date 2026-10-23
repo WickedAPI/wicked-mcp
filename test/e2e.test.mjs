@@ -20,11 +20,15 @@ test.before(async () => {
 });
 test.after(() => proc?.kill());
 
-test("serves all 90 tools over streamable HTTP and answers a live call", async () => {
+test("serves every tool over streamable HTTP and answers a live call", async () => {
   const c = new Client({ name: "e2e", version: "1" });
   await c.connect(new StreamableHTTPClientTransport(new URL(`http://localhost:${PORT}/mcp`)));
   const { tools } = await c.listTools();
-  assert.equal(tools.length, 90);
+  assert.ok(tools.length >= 105, `expected >= 105 tools, got ${tools.length}`);
+  for (const n of ["reputation_leaderboard", "reputation_stake", "registry_key_info", "sanity_get_check", "identity_jwks", "memory_prepare", "paywall_signup", "filings_search", "wallet_check"]) {
+    assert.ok(tools.some((t) => t.name === n), `missing tool ${n}`);
+  }
+  globalThis.__toolCount = tools.length;
   for (const p of ["reputation_", "registry_", "identity_", "sanity_", "memory_", "paywall_", "protocol_health", "broker_sync"]) {
     assert.ok(tools.some((t) => t.name.startsWith(p)), `missing ${p}*`);
   }
@@ -53,12 +57,12 @@ test("front door: landing page, llms.txt, server card, prompts and usage stats",
   const base = `http://localhost:${PORT}`;
   const html = await (await fetch(`${base}/`)).text();
   assert.match(html, /Wicked MCP/);
-  assert.match(html, /90 tools/);
+  assert.match(html, new RegExp(`${globalThis.__toolCount} tools`));
   const llms = await (await fetch(`${base}/llms.txt`)).text();
   assert.match(llms, /claude mcp add --transport http wicked/);
   assert.match(llms, /memory_prepare/);
   const card = await (await fetch(`${base}/.well-known/mcp/server-card.json`)).json();
-  assert.equal(card.tools.length, 90);
+  assert.equal(card.tools.length, globalThis.__toolCount);
   assert.equal(card.transport.endpoint, "/mcp");
 
   const c = new Client({ name: "e2e2", version: "1" });

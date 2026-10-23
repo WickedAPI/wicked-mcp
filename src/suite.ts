@@ -294,6 +294,60 @@ export function registerSuiteTools(server: McpServer): number {
     () => call("GET", REPUTATION_URL, "/transparency")
   );
 
+  tool(
+    "reputation_leaderboard",
+    "[Wicked Reputation] Public leaderboard: every agent's current active stake, tier and slash count. Free.",
+    { limit: z.coerce.number().optional().describe("Max rows (default set by the service).") },
+    ({ limit }) => call("GET", REPUTATION_URL, "/leaderboard", { query: { limit } })
+  );
+  tool(
+    "reputation_history",
+    "[Wicked Reputation] An agent's history of reputation/tier changes over time. Free. 404 means the wallet never registered.",
+    { wallet },
+    ({ wallet }) => call("GET", REPUTATION_URL, `/agents/${addr(wallet)}/history`)
+  );
+  tool(
+    "reputation_erc8004",
+    "[Wicked Reputation] Cross-reference a wallet against the open ERC-8004 Identity and Reputation registries (read-only). Free.",
+    { wallet },
+    ({ wallet }) => call("GET", REPUTATION_URL, `/agents/${addr(wallet)}/erc8004`)
+  );
+  const repSig = {
+    wallet: z.string().describe("Your 0x wallet address on Base."),
+    nonce: z.string().describe("Nonce from a FRESH reputation_get_nonce call."),
+    signature: z.string().describe("0x-prefixed ECDSA signature (EIP-191) over that nonce's message, from YOUR wallet."),
+  };
+  tool(
+    "reputation_get_nonce",
+    "[Wicked Reputation] Step 1 of every signed Reputation call (register, stake, unstake, withdraw): a one-time nonce plus the exact message to sign. Each signed call needs a fresh nonce.",
+    { wallet },
+    ({ wallet }) => call("GET", REPUTATION_URL, `/agents/${addr(wallet)}/nonce`)
+  );
+  tool(
+    "reputation_register",
+    "[Wicked Reputation] Register your wallet as an agent (no stake required). Needs your signature over reputation_get_nonce's message; this tool never signs.",
+    repSig,
+    ({ wallet, nonce, signature }) => call("POST", REPUTATION_URL, "/agents/register", { json: { wallet_address: wallet, nonce, signature } })
+  );
+  tool(
+    "reputation_stake",
+    "[Wicked Reputation] Record a USDC stake that YOU already sent on-chain to the treasury (see reputation_transparency for the address). Real funds: send the transfer from your own wallet first, then pass its tx_hash with a signed nonce. This tool never moves funds or signs.",
+    { ...repSig, tx_hash: z.string().describe("Hash of your on-chain USDC transfer to the treasury."), amount: z.coerce.number().describe("USDC amount staked.") },
+    ({ wallet, nonce, signature, tx_hash, amount }) => call("POST", REPUTATION_URL, `/agents/${addr(wallet)}/stake`, { json: { nonce, signature, tx_hash, amount } })
+  );
+  tool(
+    "reputation_unstake",
+    "[Wicked Reputation] Start the unbonding period for `amount` of your active stake. It stops counting toward tier/reputation immediately; withdraw after the cooldown (see reputation_transparency). Needs a signed nonce.",
+    { ...repSig, amount: z.coerce.number().describe("USDC amount to unbond.") },
+    ({ wallet, nonce, signature, amount }) => call("POST", REPUTATION_URL, `/agents/${addr(wallet)}/unstake`, { json: { nonce, signature, amount } })
+  );
+  tool(
+    "reputation_withdraw",
+    "[Wicked Reputation] Pay out every unbonding stake whose cooldown has elapsed, in one on-chain transfer to your wallet. Safe to retry if a payout fails. Needs a signed nonce.",
+    repSig,
+    ({ wallet, nonce, signature }) => call("POST", REPUTATION_URL, `/agents/${addr(wallet)}/withdraw`, { json: { nonce, signature } })
+  );
+
   // ---- Wicked Registry ----
   tool(
     "registry_search_tools",
@@ -351,6 +405,18 @@ export function registerSuiteTools(server: McpServer): number {
       label: z.string().optional().describe("Optional label for the key."),
     },
     (a) => call("POST", REGISTRY_URL, "/keys", { json: { wallet: a.wallet, timestamp: a.timestamp, signature: a.signature, label: a.label } })
+  );
+  tool(
+    "registry_key_info",
+    "[Wicked Registry] Metadata and usage for a Registry API key (wr_...): label, created time, call counts. Pass api_key, or set REGISTRY_API_KEY.",
+    { api_key: z.string().optional().describe("Registry API key to inspect. Overrides REGISTRY_API_KEY.") },
+    ({ api_key }) => call("GET", REGISTRY_URL, "/keys/self", { headers: keyHeader(api_key || REGISTRY_API_KEY) })
+  );
+  tool(
+    "registry_revoke_key",
+    "[Wicked Registry] PERMANENTLY revoke a Registry API key (the one presented). Use if a key leaked. Pass api_key, or set REGISTRY_API_KEY.",
+    { api_key: z.string().optional().describe("Registry API key to revoke. Overrides REGISTRY_API_KEY.") },
+    ({ api_key }) => call("DELETE", REGISTRY_URL, "/keys/self", { headers: keyHeader(api_key || REGISTRY_API_KEY) })
   );
   tool(
     "registry_featured_tools",
@@ -492,6 +558,13 @@ export function registerSuiteTools(server: McpServer): number {
     { claims: z.array(z.string()).min(1).max(50).describe("1-50 statements, each up to 5,000 chars."), context: contextShape, mode: modeShape },
     ({ claims, context, mode }) =>
       call("POST", SANITY_URL, "/check/batch", { headers: keyHeader(SANITY_API_KEY), json: { claims, context, mode: mode ?? "grounded" }, timeoutMs: SANITY_TIMEOUT_MS })
+  );
+
+  tool(
+    "sanity_get_check",
+    "[Wicked Sanity] Fetch a previously run check by its check_id (returned by sanity_check / sanity_check_batch). x402 or SANITY_API_KEY like the other Sanity calls.",
+    { check_id: z.string().describe("The check_id from an earlier sanity_check result.") },
+    ({ check_id }) => call("GET", SANITY_URL, `/checks/${encodeURIComponent(check_id)}`, { headers: keyHeader(SANITY_API_KEY) })
   );
 
   // ---- Wicked Memory (wallet-scoped, signature per call) ----
