@@ -25,7 +25,7 @@ These tools never sign anything or hold a key. Agents with no wallet can still t
 
 ## Remote endpoint (no install)
 
-The same 105 tools are served over streamable HTTP at **`https://mcp.wickedapi.com/mcp`** (stateless, rate-limited per IP; the public deployment carries no personal keys, so paid calls return the x402 challenge). Point any streamable-HTTP MCP client at it. To self-host, build the `Dockerfile` (or `npm run build && npm run start:http`); see `.env.example` for `RATE_LIMIT_PER_MINUTE`, `ALLOWED_HOSTS` and `TRUSTED_CLIENT_IP_HEADER`.
+The same 107 tools are served over streamable HTTP at **`https://mcp.wickedapi.com/mcp`** (stateless, rate-limited per IP; the public deployment carries no personal keys, so paid calls return the x402 challenge). Point any streamable-HTTP MCP client at it. To self-host, build the `Dockerfile` and run it with `node dist/http.js` (the image defaults to the stdio entry point), or `npm run build && npm run start:http`; see `.env.example` for `RATE_LIMIT_PER_MINUTE`, `ALLOWED_HOSTS` and `TRUSTED_CLIENT_IP_HEADER`.
 
 ## No signup required
 
