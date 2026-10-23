@@ -7,6 +7,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { clientKey } from "./clientIp.js";
+import { fairSnapshot, withClient } from "./fair.js";
 import { rateLimited } from "./rateLimit.js";
 import { landingHtml, llmsTxt, serverCard } from "./landing.js";
 import { knownTools, usageHooks, usageSnapshot } from "./usage.js";
@@ -69,7 +70,7 @@ async function main() {
       if (url.pathname === "/.well-known/mcp/server-card.json" || url.pathname === "/.well-known/mcp.json") {
         return send(res, 200, serverCard(tools, SERVER_VERSION), { "cache-control": "public, max-age=300" });
       }
-      if (url.pathname === "/stats") return send(res, 200, usageSnapshot());
+      if (url.pathname === "/stats") return send(res, 200, { ...usageSnapshot(), fair_use: fairSnapshot() });
     }
     if (url.pathname !== "/mcp") return send(res, 404, { error: "Not found. The MCP endpoint is /mcp." });
     if (req.method !== "POST") {
@@ -98,7 +99,8 @@ async function main() {
         void server.close();
       });
       await server.connect(transport);
-      await transport.handleRequest(req, res, body);
+      // Attach the caller's rate-limit key so tool handlers can apply per-client fair-use limits.
+      await withClient(clientKey(req), () => transport.handleRequest(req, res, body));
     } catch (err) {
       const status = (err as { status?: number }).status ?? 500;
       // Only server faults: 4xx here are client mistakes (bad JSON, oversized body).

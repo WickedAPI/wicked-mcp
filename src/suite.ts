@@ -10,6 +10,12 @@
 import { createHash, randomBytes } from "node:crypto";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
+import { cacheGet, cacheKeyOf, cacheSet, reserveOpenMode } from "./fair.js";
+
+const MIN = 60_000;
+// Grounded verdicts depend only on the claim and the context supplied, so they stay valid longer than open-mode
+// ones, which reflect live web evidence.
+const sanityTtl = (mode?: string) => ((mode ?? "grounded") === "open" ? 10 * MIN : 60 * MIN);
 
 function envUrl(name: string, fallback: string): string {
   return (process.env[name] || fallback).replace(/\/$/, "");
@@ -90,6 +96,10 @@ interface ReqOpts {
   query?: Record<string, unknown>;
   json?: Record<string, unknown>;
   timeoutMs?: number;
+  /** Cache a 200 answer this long. Only for reads whose answer is the same for every caller. */
+  cacheTtlMs?: number;
+  /** Runs after a cache miss and before the upstream call; return a body to short-circuit (fair-use gate). */
+  gate?: () => Json | null;
 }
 
 async function call(method: string, base: string, path: string, opts: ReqOpts = {}): Promise<Json> {
@@ -101,8 +111,16 @@ async function call(method: string, base: string, path: string, opts: ReqOpts = 
     headers["content-type"] = "application/json";
     init.body = JSON.stringify(clean(opts.json));
   }
+  const cacheKey = opts.cacheTtlMs ? cacheKeyOf(method, url.toString(), init.body ?? null) : "";
+  if (cacheKey) {
+    const hit = cacheGet<Json>(cacheKey);
+    if (hit) return { ...hit, cached: true };
+  }
+  const refused = opts.gate?.();
+  if (refused) return refused;
   try {
     const body = await finalize(await fetch(url.toString(), init));
+    if (cacheKey && body.http_status === 200) cacheSet(cacheKey, body, opts.cacheTtlMs!);
     // These services answer 402 both when no key is sent and when a key is
     // rejected, so the status alone can't say which. Say what THIS server did
     // (never the key itself), so an agent or operator can tell the cases apart.
@@ -258,7 +276,7 @@ export function registerSuiteTools(server: McpServer): number {
     "reputation_status",
     "[Wicked Reputation] An agent's current reputation: tier, active/unbonding stake, score, slash count, founding-member badge. http_status 404 means the wallet never registered — treat as tier 'unranked'.",
     { wallet },
-    ({ wallet }) => call("GET", REPUTATION_URL, `/agents/${addr(wallet)}/status`)
+    ({ wallet }) => call("GET", REPUTATION_URL, `/agents/${addr(wallet)}/status`, { cacheTtlMs: 2 * MIN })
   );
   tool(
     "reputation_statement",
@@ -382,7 +400,7 @@ export function registerSuiteTools(server: McpServer): number {
       category: z.string().optional(),
       limit: z.coerce.number().optional().describe("1-25, default 10."),
     },
-    (a) => call("GET", REGISTRY_URL, "/lookup", { query: clean(a) })
+    (a) => call("GET", REGISTRY_URL, "/lookup", { query: clean(a), cacheTtlMs: 5 * MIN })
   );
   tool(
     "registry_onboarding_message",
@@ -422,13 +440,13 @@ export function registerSuiteTools(server: McpServer): number {
     "registry_featured_tools",
     "[Wicked Registry] Top scored active tools. Public and free.",
     {},
-    () => call("GET", REGISTRY_URL, "/featured-tools")
+    () => call("GET", REGISTRY_URL, "/featured-tools", { cacheTtlMs: 5 * MIN })
   );
   tool(
     "registry_tool_badge",
     "[Wicked Registry] A tool's current composite reliability score. Public and free.",
     { tool_id: z.string().describe("The tool's Wicked Registry id.") },
-    ({ tool_id }) => call("GET", REGISTRY_URL, `/tools/${encodeURIComponent(tool_id)}/badge`)
+    ({ tool_id }) => call("GET", REGISTRY_URL, `/tools/${encodeURIComponent(tool_id)}/badge`, { cacheTtlMs: 5 * MIN })
   );
   tool(
     "registry_report_tool",
@@ -550,14 +568,14 @@ export function registerSuiteTools(server: McpServer): number {
     '[Wicked Sanity] Verify one claim before acting on it. Verdicts: supported | contradicted | unsupported | insufficient_evidence (see `data`). confidence_score is raw consistency (a "contradicted" verdict scores near 0). Policy: act on supported; treat unsupported/insufficient_evidence as unverified; reject contradicted. x402 or SANITY_API_KEY; 429 means a rate limit — see retry_after.',
     { claim: z.string().describe("The single statement to verify (max 5,000 chars)."), context: contextShape, mode: modeShape },
     ({ claim, context, mode }) =>
-      call("POST", SANITY_URL, "/check", { headers: keyHeader(SANITY_API_KEY), json: { claim, context, mode: mode ?? "grounded" }, timeoutMs: SANITY_TIMEOUT_MS })
+      call("POST", SANITY_URL, "/check", { headers: keyHeader(SANITY_API_KEY), json: { claim, context, mode: mode ?? "grounded" }, timeoutMs: SANITY_TIMEOUT_MS, cacheTtlMs: sanityTtl(mode), gate: () => ((mode ?? "grounded") === "open" ? reserveOpenMode(1) : null) })
   );
   tool(
     "sanity_check_batch",
     "[Wicked Sanity] Verify up to 50 claims against one shared context in a single call — prefer this over one sanity_check per sentence. `data` is a list in the same order as `claims`.",
     { claims: z.array(z.string()).min(1).max(50).describe("1-50 statements, each up to 5,000 chars."), context: contextShape, mode: modeShape },
     ({ claims, context, mode }) =>
-      call("POST", SANITY_URL, "/check/batch", { headers: keyHeader(SANITY_API_KEY), json: { claims, context, mode: mode ?? "grounded" }, timeoutMs: SANITY_TIMEOUT_MS })
+      call("POST", SANITY_URL, "/check/batch", { headers: keyHeader(SANITY_API_KEY), json: { claims, context, mode: mode ?? "grounded" }, timeoutMs: SANITY_TIMEOUT_MS, cacheTtlMs: sanityTtl(mode), gate: () => ((mode ?? "grounded") === "open" ? reserveOpenMode(claims.length) : null) })
   );
 
   tool(
