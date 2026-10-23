@@ -213,8 +213,31 @@ function registerServiceTools(server: McpServer, service: ServiceDef, doc: OpenA
           } catch {
             body = text;
           }
+          if (!r.ok) {
+            // x402 v2 services answer an unpaid call with an empty body and put the
+            // price/payTo challenge only in the base64 Payment-Required header; surface
+            // it (and the status) so an agent sees what to pay instead of a blank error.
+            const env: Record<string, unknown> =
+              body && typeof body === "object" && !Array.isArray(body) ? { ...(body as Record<string, unknown>) } : body === "" ? {} : { raw_body: body };
+            env.http_status = r.status;
+            const header = r.headers.get("payment-required");
+            if (header) {
+              try {
+                env.payment_required = JSON.parse(Buffer.from(header, "base64").toString("utf8"));
+              } catch {
+                /* leave undecoded */
+              }
+            }
+            if (r.status === 402) {
+              env.how_to_pay =
+                "Priced endpoint. Pay the x402 challenge in payment_required (USDC on Base), or set WICKEDAPI_API_KEY for the free tier, " +
+                "or run `npx -y @wickedlabs/wicked-mcp` locally with WICKEDAPI_PAYER_PRIVATE_KEY to auto-pay.";
+            }
+            body = env;
+          }
           return {
-            isError: !r.ok,
+            // A 402 is the price, not a tool failure; everything else non-2xx is an error.
+            isError: !r.ok && r.status !== 402,
             content: [{ type: "text" as const, text: JSON.stringify(body, null, 2) }],
           };
         }
@@ -390,7 +413,7 @@ function registerPrompts(server: McpServer) {
 }
 
 
-export const SERVER_VERSION = "0.7.0";
+export const SERVER_VERSION = "0.7.1";
 
 // Everything expensive or network-bound happens once, in loadWorld(): the
 // payer-wallet fetcher and the OpenAPI specs of the generated services.
