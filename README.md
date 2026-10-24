@@ -2,7 +2,7 @@
 
 MCP server for the whole [Wicked](https://wickedapi.com) suite — trading data, DeFi protocol health, token safety, brokerage sync, agent identity, reputation, a tool-reliability registry, hallucination checks, persistent agent memory, and x402 paywalls, in one server.
 
-**105 tools** across 12 live services. The first four are generated automatically from each service's own live `openapi.json`, so the list always matches what's deployed; the rest are hand-written because they use wallet signatures and non-`/v1` routes:
+**100+ tools** across 12 live services. The first four are generated automatically from each service's own live `openapi.json`, so the list always matches what's deployed; the rest are hand-written because they use wallet signatures and non-`/v1` routes:
 
 | Service | Tools | Auth |
 | --- | --- | --- |

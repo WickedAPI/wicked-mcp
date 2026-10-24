@@ -3,6 +3,7 @@ import { z } from "zod";
 import { registerSuiteTools } from "./suite.js";
 import { registerSuitePrompts } from "./prompts.js";
 import { instrument, type ToolHooks } from "./usage.js";
+import { decorateRegistry } from "./toolMeta.js";
 
 // --- Service registry -------------------------------------------------
 // One entry per live WickedAPI service. "trading" is the original
@@ -149,7 +150,33 @@ async function loadServiceSpec(service: ServiceDef): Promise<OpenApiDoc | null> 
   }
 }
 
-function registerServiceTools(server: McpServer, service: ServiceDef, doc: OpenApiDoc, doFetch: typeof fetch): number {
+// Each service's own /v1/status catalog says which endpoints are free (auth:false)
+// and documents parameters in more detail than its OpenAPI spec. Loaded once at
+// boot; any failure just means those hints are omitted.
+interface StatusEntry { auth?: boolean; params?: Record<string, string> }
+type StatusCatalog = Record<string, StatusEntry>; // keyed by OpenAPI-style path, e.g. /v1/health/{slug}
+
+async function loadStatusCatalog(service: ServiceDef): Promise<StatusCatalog> {
+  try {
+    const res = await fetch(`${service.baseUrl}/v1/status`, { signal: AbortSignal.timeout(10_000) });
+    if (!res.ok) return {};
+    const body = (await res.json()) as any;
+    const endpoints: any[] = (body.data ?? body).endpoints ?? [];
+    const out: StatusCatalog = {};
+    for (const e of endpoints) {
+      if (typeof e.path !== "string") continue;
+      out[`${String(e.method || "GET").toUpperCase()} ${e.path.replace(/:([A-Za-z_]+)/g, "{$1}")}`] = { auth: e.auth, params: e.params };
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+// tool name -> true when the endpoint is priced/keyed, false when free. Read by toolMeta.
+const PRICED = new Map<string, boolean>();
+
+function registerServiceTools(server: McpServer, service: ServiceDef, doc: OpenApiDoc, doFetch: typeof fetch, status: StatusCatalog = {}): number {
   let registered = 0;
   for (const [openapiPath, methods] of Object.entries(doc.paths)) {
     if (!openapiPath.startsWith("/v1/") || openapiPath === "/v1/status") continue; // /v1/status is a resource instead
@@ -161,13 +188,15 @@ function registerServiceTools(server: McpServer, service: ServiceDef, doc: OpenA
       const bodyPropNames: string[] = [];
       const shape: Record<string, z.ZodTypeAny> = {};
 
+      const st = status[`${method.toUpperCase()} ${openapiPath}`];
+      const pdoc = (name: string, d?: string) => d || st?.params?.[name];
       for (const p of op.parameters ?? []) {
         if (p.in === "path") {
           pathParamNames.push(p.name);
-          shape[p.name] = zodFor({ type: p.schema?.type, required: true, description: p.description });
+          shape[p.name] = zodFor({ type: p.schema?.type, required: true, description: pdoc(p.name, p.description) });
         } else if (p.in === "query") {
           queryParamNames.push(p.name);
-          shape[p.name] = zodFor({ type: p.schema?.type, required: p.required, description: p.description });
+          shape[p.name] = zodFor({ type: p.schema?.type, required: p.required, description: pdoc(p.name, p.description) });
         }
       }
       const bodySchema = op.requestBody?.content?.["application/json"]?.schema;
@@ -175,15 +204,20 @@ function registerServiceTools(server: McpServer, service: ServiceDef, doc: OpenA
         const required = new Set(bodySchema.required ?? []);
         for (const [name, prop] of Object.entries(bodySchema.properties ?? {})) {
           bodyPropNames.push(name);
-          shape[name] = zodFor({ type: prop.type, required: required.has(name), description: prop.description });
+          shape[name] = zodFor({ type: prop.type, required: required.has(name), description: pdoc(name, prop.description) });
         }
       }
 
       const name = toolNameFor(service, method, openapiPath);
+      if (typeof st?.auth === "boolean") PRICED.set(name, st.auth);
+      // Specs often repeat the summary at the start of the description; say it once.
+      const summary = (op.summary ?? "").trim();
+      const detail = (op.description ?? "").trim();
+      const text = !detail ? summary : !summary || detail.toLowerCase().startsWith(summary.toLowerCase().replace(/[.\s]+$/, "")) ? detail : `${summary} - ${detail}`;
       server.registerTool(
         name,
         {
-          description: `[${service.name}] ${[op.summary, op.description].filter(Boolean).join(" — ")}`.slice(0, 1000),
+          description: `[${service.name}] ${text}`.slice(0, 900),
           inputSchema: shape,
         },
         async (args: Record<string, unknown>) => {
@@ -413,7 +447,7 @@ function registerPrompts(server: McpServer) {
 }
 
 
-export const SERVER_VERSION = "0.7.1";
+export const SERVER_VERSION = "0.7.2";
 
 // Everything expensive or network-bound happens once, in loadWorld(): the
 // payer-wallet fetcher and the OpenAPI specs of the generated services.
@@ -421,7 +455,7 @@ export const SERVER_VERSION = "0.7.1";
 // transport can create a fresh McpServer per request.
 export interface WickedWorld {
   doFetch: typeof fetch;
-  specs: { service: ServiceDef; doc: OpenApiDoc }[];
+  specs: { service: ServiceDef; doc: OpenApiDoc; status: StatusCatalog }[];
 }
 
 export async function loadWorld(): Promise<WickedWorld> {
@@ -429,7 +463,7 @@ export async function loadWorld(): Promise<WickedWorld> {
   const specs: WickedWorld["specs"] = [];
   for (const service of SERVICES) {
     const doc = await loadServiceSpec(service);
-    if (doc) specs.push({ service, doc });
+    if (doc) specs.push({ service, doc, status: await loadStatusCatalog(service) });
   }
   if (specs.length === 0) {
     throw new Error("No service specs loaded - check network access and WICKEDAPI_*_URL overrides.");
@@ -439,11 +473,12 @@ export async function loadWorld(): Promise<WickedWorld> {
 
 export function buildServer(world: WickedWorld, hooks?: ToolHooks): { server: McpServer; summary: string } {
   const server = new McpServer({ name: "wickedapi", version: SERVER_VERSION });
+  decorateRegistry(server, (tool) => PRICED.get(tool));
   if (hooks) instrument(server as any, hooks);
   let totalTools = 0;
   const loaded: string[] = [];
-  for (const { service, doc } of world.specs) {
-    totalTools += registerServiceTools(server, service, doc, world.doFetch);
+  for (const { service, doc, status } of world.specs) {
+    totalTools += registerServiceTools(server, service, doc, world.doFetch, status);
     loaded.push(service.name);
   }
   // Reputation, Registry, Identity, Sanity, Memory and Paywall use hand-written
