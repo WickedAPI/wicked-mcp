@@ -19,6 +19,16 @@ jobs:
       - name: Install mcp-publisher
         run: |
           curl -sSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
+      # The registry verifies the npm version exists, and a fresh publish can take a minute to appear.
+      - name: Wait for the npm version in server.json
+        run: |
+          name=$(node -p "require('./server.json').packages[0].identifier")
+          version=$(node -p "require('./server.json').packages[0].version")
+          for i in $(seq 1 30); do
+            if npm view "$name@$version" version >/dev/null 2>&1; then echo "$name@$version is on npm"; exit 0; fi
+            echo "waiting for $name@$version ($i/30)"; sleep 10
+          done
+          echo "$name@$version never appeared on npm"; exit 1
       - run: ./mcp-publisher validate
       - run: ./mcp-publisher login github-oidc
       - run: ./mcp-publisher publish
