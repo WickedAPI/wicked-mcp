@@ -93,3 +93,22 @@ test("an unpaid priced call returns the decoded x402 price, not an empty error",
   assert.equal(r.isError, false, "a 402 is a price, not a tool failure");
   await c.close();
 });
+
+test("every tool has annotations, usage guidance and a behavior line (Glama tool-definition quality)", async () => {
+  const c = new Client({ name: "e2e4", version: "1" });
+  await c.connect(new StreamableHTTPClientTransport(new URL(`http://localhost:${PORT}/mcp`)));
+  const { tools } = await c.listTools();
+  const missingUse = tools.filter((t) => !/Use when /.test(t.description)).map((t) => t.name);
+  const missingBehavior = tools.filter((t) => !/Behavior: /.test(t.description)).map((t) => t.name);
+  const missingAnn = tools.filter((t) => !t.annotations || typeof t.annotations.readOnlyHint !== "boolean").map((t) => t.name);
+  // Tools generated at boot from a service's OpenAPI spec may be new; they only need annotations and behavior.
+  assert.deepEqual(missingAnn, []);
+  assert.deepEqual(missingBehavior, []);
+  assert.ok(missingUse.length <= 3, `tools without "Use when" guidance: ${missingUse.join(", ")}`);
+  const byName = Object.fromEntries(tools.map((t) => [t.name, t]));
+  assert.equal(byName.memory_delete.annotations.destructiveHint, true);
+  assert.equal(byName.atr.annotations.readOnlyHint, true);
+  assert.equal(byName.memory_store.annotations.readOnlyHint, false);
+  assert.match(byName.sentiment.description, /free; no key or payment needed/);
+  await c.close();
+});
