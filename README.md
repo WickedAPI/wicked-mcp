@@ -19,7 +19,7 @@ MCP server for the whole [Wicked](https://wickedapi.com) suite — trading data,
 | [Wicked Memory](https://memory.wickedapi.com) | 8 (`memory_prepare`, `memory_store`, `memory_search`, …) | wallet signature on every call; only search is metered |
 | [x402 Paywall](https://paywall.wickedapi.com) | 8 (`paywall_*`) | `paywall_signup` is open; the rest need the tenant key |
 
-Plus **6 resources** (the platform directory, `llms.txt`, and each service's live endpoint catalog) and **7 prompts** (`rug_check`, `vet_dependency`, `morning_briefing`, `fact_check`, `verify_agent`, `find_reliable_tool`, `agent_memory_guide`) that chain tools together the way the [cookbook](../cookbooks/wickedapi-cookbook.md) does.
+Plus **6 resources** (the platform directory, `llms.txt`, and each service's live endpoint catalog) and **10 prompts** (`rug_check`, `vet_dependency`, `morning_briefing`, `fact_check`, `verify_agent`, `find_reliable_tool`, `agent_memory_guide`) that chain tools together the way the [cookbook](../cookbooks/wickedapi-cookbook.md) does.
 
 These tools never sign anything or hold a key. Agents with no wallet can still try Wicked Identity end to end through a sandbox identity (`identity_sandbox_register`, then pass `sandbox_token` instead of a signature); sandbox results are for testing and are never reported as verified. Identity (real wallet), Registry registration and Memory take a signature you produce with your own wallet (`identity_get_nonce` / `memory_prepare` return the exact message to sign). Calls that need x402 payment return the real `402` challenge (decoded under `payment_required` for x402 v2) rather than auto-paying — `WICKEDAPI_PAYER_PRIVATE_KEY` auto-pay applies to the Trading, Protocol Health, Token Risk and Broker Sync tools.
 
@@ -97,6 +97,9 @@ One-click workflows that chain real tool calls (Claude Desktop and other prompt-
 - **`verify_agent`** (`wallet`) — Identity assertion + Reputation stake/tier before you transact with an agent.
 - **`find_reliable_tool`** (`need`, optional `category`, `min_score`) — Registry search by real uptime/latency/schema scores.
 - **`agent_memory_guide`** (`wallet`, `task`) — the two-step signed Memory flow, explained to the model.
+- **`counterparty_check`** (`address`) — OFAC screening and wallet risk (plus Identity/Reputation) before you pay someone.
+- **`insider_watch`** (`ticker`, optional `days`) — insider trades, insider summary and 8-K events for a stock.
+- **`trade_idea_check`** (`symbol`, optional `timeframe`) — verdict, volatility, positioning and news for a trade idea.
 
 ## Environment variables
 

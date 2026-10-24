@@ -18,7 +18,7 @@ const GROUPS: { id: string; label: string; prefix?: string; blurb: string }[] = 
   { id: "paywall", label: "x402 Paywall", prefix: "paywall_", blurb: "Put any endpoint behind pay-per-call USDC." },
 ];
 
-export const PROMPT_NAMES = ["rug_check", "vet_dependency", "morning_briefing", "fact_check", "verify_agent", "find_reliable_tool", "agent_memory_guide"];
+export const PROMPT_NAMES = ["rug_check", "vet_dependency", "morning_briefing", "fact_check", "verify_agent", "find_reliable_tool", "agent_memory_guide", "counterparty_check", "insider_watch", "trade_idea_check"];
 
 function grouped(tools: string[]) {
   const claimed = new Set<string>();
