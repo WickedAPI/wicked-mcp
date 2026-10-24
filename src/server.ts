@@ -447,7 +447,7 @@ function registerPrompts(server: McpServer) {
 }
 
 
-export const SERVER_VERSION = "0.7.2";
+export const SERVER_VERSION = "0.7.3";
 
 // Everything expensive or network-bound happens once, in loadWorld(): the
 // payer-wallet fetcher and the OpenAPI specs of the generated services.

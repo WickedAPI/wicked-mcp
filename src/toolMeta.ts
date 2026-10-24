@@ -124,6 +124,7 @@ const USAGE: Record<string, Usage> = {
   memory_delete: { u: "you must permanently erase a memory (right to be forgotten).", n: "correcting it (use memory_update, which keeps history)." },
   memory_deletions: { u: "you want your audit log of deletions (ids, times, reasons, never content).", n: "recovering content, which is gone." },
   // --- Paywall ---
+  paywall_demo_weather: { u: "you want to see a real x402 payment challenge from a paywalled route (price, network, payTo) without creating anything.", n: "setting up your own paywall (use paywall_signup then paywall_create_route)." },
   paywall_signup: { u: "you want a paywall tenant account and its API key (shown once).", n: "managing routes of an existing tenant." },
   paywall_get_tenant: { u: "you want your tenant record (name, slug, key hint).", n: "route management." },
   paywall_list_routes: { u: "you want your paywalled routes and their prices.", n: "earnings (use paywall_list_settlements)." },

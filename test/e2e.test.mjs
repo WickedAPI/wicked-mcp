@@ -112,3 +112,17 @@ test("every tool has annotations, usage guidance and a behavior line (Glama tool
   assert.match(byName.sentiment.description, /free; no key or payment needed/);
   await c.close();
 });
+
+test("paywall tools hit the tenant API (paywall-admin), and the demo route returns a decoded x402 price", async () => {
+  const c = new Client({ name: "e2e5", version: "1" });
+  await c.connect(new StreamableHTTPClientTransport(new URL(`http://localhost:${PORT}/mcp`)));
+  // Without a tenant key the tenant API answers 401. A 404 means the tool points at the gateway host instead.
+  const routes = JSON.parse((await c.callTool({ name: "paywall_list_routes", arguments: {} })).content[0].text);
+  assert.equal(routes.http_status, 401, `paywall_list_routes should reach the tenant API, got ${routes.http_status}`);
+  const demo = JSON.parse((await c.callTool({ name: "paywall_demo_weather", arguments: {} })).content[0].text);
+  assert.equal(demo.http_status, 402);
+  assert.ok(demo.payment_required?.accepts?.length, "demo route must expose the decoded x402 challenge");
+  const { prompts } = await c.listPrompts();
+  for (const p of ["counterparty_check", "insider_watch", "trade_idea_check"]) assert.ok(prompts.some((x) => x.name === p), `missing prompt ${p}`);
+  await c.close();
+});

@@ -26,7 +26,9 @@ const REGISTRY_URL = envUrl("REGISTRY_BASE_URL", "https://registry.wickedapi.com
 const IDENTITY_URL = envUrl("IDENTITY_BASE_URL", "https://verify.wickedapi.com");
 const SANITY_URL = envUrl("SANITY_BASE_URL", "https://sanity.wickedapi.com");
 const MEMORY_URL = envUrl("MEMORY_BASE_URL", "https://memory.wickedapi.com");
-const PAYWALL_URL = envUrl("PAYWALL_BASE_URL", "https://paywall.wickedapi.com");
+// The tenant/config API lives on paywall-admin; paywall.wickedapi.com is the gateway that serves the paid routes.
+const PAYWALL_URL = envUrl("PAYWALL_BASE_URL", "https://paywall-admin.wickedapi.com");
+const PAYWALL_GATEWAY_URL = envUrl("PAYWALL_GATEWAY_URL", "https://paywall.wickedapi.com");
 
 const REGISTRY_API_KEY = process.env.REGISTRY_API_KEY || "";
 const IDENTITY_API_KEY = process.env.IDENTITY_API_KEY || "";
@@ -709,6 +711,12 @@ export function registerSuiteTools(server: McpServer): number {
     description: z.string().optional().describe("Up to 200 chars: letters, digits, space . _ -"),
     upstreamUrl: z.string().optional().describe("Your https backend. Omit for the demo confirmation payload."),
   };
+  tool(
+    "paywall_demo_weather",
+    "[x402 Paywall] Call the live demo route on the paywall gateway (GET /wickedapi/weather) to see a real x402 challenge: unpaid, it returns HTTP 402 with the decoded price, network and payTo in payment_required. A safe way to learn what a paywalled endpoint looks like before creating your own.",
+    {},
+    () => call("GET", PAYWALL_GATEWAY_URL, "/wickedapi/weather")
+  );
   tool(
     "paywall_signup",
     "[x402 Paywall] Create a tenant account. Returns a Bearer apiKey ONCE — store it and set PAYWALL_API_KEY. Rate-limited to 5/hour per IP.",

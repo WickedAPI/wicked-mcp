@@ -116,4 +116,96 @@ export function registerSuitePrompts(server: McpServer) {
       ],
     })
   );
+
+  server.registerPrompt(
+    "counterparty_check",
+    {
+      title: "Check a counterparty before you pay",
+      description: "Screen a wallet or contract before sending funds: OFAC sanctions, malicious-address flags, and (if it is an agent) its identity and stake.",
+      argsSchema: { address: z.string().describe("The 0x wallet or contract address you are about to transact with.") },
+    },
+    ({ address }) => ({
+      description: "Counterparty screening",
+      messages: [
+        text(
+          `Before I send anything to ${address}, screen it with real data - never guess:
+
+` +
+            `1. Call \`wallet_sanctions_check\` (free) with the address. Report whether it is on the OFAC SDN list and the sanctioned entity if so.
+` +
+            `2. Call \`wallet_check\` for the broader pre-transaction check (malicious-address flags and on-chain signals). If it returns http_status 402, show me the price from payment_required and continue with what is free.
+` +
+            `3. If this address is an agent I might deal with repeatedly, also call \`identity_status\` and \`reputation_status\` for it (a 404 from reputation means never registered, not an error).
+
+` +
+            `Summarize: sanctioned or not, any flags, and what is unknown. These are signals, not a guarantee.`
+        ),
+      ],
+    })
+  );
+
+  server.registerPrompt(
+    "insider_watch",
+    {
+      title: "Insider and filings watch",
+      description: "For a stock ticker, combine recent insider trading, an insider summary and classified 8-K events from SEC filings.",
+      argsSchema: {
+        ticker: z.string().describe('US stock ticker, e.g. "NVDA".'),
+        days: z.string().optional().describe("Lookback window in days (default 30)."),
+      },
+    },
+    ({ ticker, days }) => ({
+      description: "Insider and filings watch",
+      messages: [
+        text(
+          `Build an insider and filings view of ${ticker} over the last ${days || "30"} days using real data only:
+
+` +
+            `1. \`filings_insider_summary\` for the ticker: open-market buy and sell counts and dollar totals.
+` +
+            `2. \`filings_insider_trades\` for the individual Form 4 trades (insider, role, code, size). Report exact values.
+` +
+            `3. \`filings_8k_events\` for material events (earnings, executive changes, agreements).
+` +
+            `4. Optionally \`earnings_calendar\` for the next report date.
+
+` +
+            `If any call returns http_status 402, show the price from payment_required rather than guessing. Then summarize what the filings actually show; do not speculate beyond them.`
+        ),
+      ],
+    })
+  );
+
+  server.registerPrompt(
+    "trade_idea_check",
+    {
+      title: "Check a trade idea",
+      description: "Pressure-test a trade on one asset with the verdict engine, volatility, positioning and fresh news, without inventing numbers.",
+      argsSchema: {
+        symbol: z.string().describe("Asset symbol, e.g. BTC, ETH, SOL, NVDA."),
+        timeframe: z.string().optional().describe("Timeframe such as 1h or 1D (default 1h)."),
+      },
+    },
+    ({ symbol, timeframe }) => ({
+      description: "Trade idea check",
+      messages: [
+        text(
+          `Pressure-test a trade on ${symbol} (${timeframe || "1h"}) from real tool output only:
+
+` +
+            `1. \`verdict\` for the bias, confidence, thesis, entry, invalidation and targets.
+` +
+            `2. \`atr\` for volatility and regime (size the stop from it).
+` +
+            `3. For crypto: \`funding_oi\` and \`long_short_ratio\` for crowding; \`liquidity_levels\` for nearby pools.
+` +
+            `4. \`crypto_news\` for fresh headlines that could invalidate the idea.
+
+` +
+            `Quote exact values. If a call returns 402, show the price instead of guessing. End with a plain verdict and what would invalidate it. This is analysis from tools, not financial advice.`
+        ),
+      ],
+    })
+  );
 }
+
