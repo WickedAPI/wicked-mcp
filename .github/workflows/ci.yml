@@ -1,0 +1,22 @@
+name: CI
+
+# Build and run the test suite on every push and pull request.
+# The end-to-end tests call the live Wicked services, so they need network access.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm test

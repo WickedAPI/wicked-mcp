@@ -3,7 +3,7 @@
   "name": "io.github.WickedAPI/wicked-mcp",
   "title": "Wicked MCP",
   "description": "Whole Wicked suite for agents: market data, SEC filings, wallet checks, risk, identity, memory.",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "websiteUrl": "https://mcp.wickedapi.com",
   "repository": {
     "url": "https://github.com/WickedAPI/wicked-mcp",
@@ -13,7 +13,7 @@
     {
       "registryType": "npm",
       "identifier": "@wickedlabs/wicked-mcp",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "transport": {
         "type": "stdio"
       },
