@@ -1,5 +1,7 @@
 # WickedAPI MCP Server
 
+[![smithery badge](https://smithery.ai/badge/wickedapi/wicked-mcp)](https://smithery.ai/servers/wickedapi/wicked-mcp)
+
 MCP server for the whole [Wicked](https://wickedapi.com) suite — trading data, DeFi protocol health, token safety, brokerage sync, agent identity, reputation, a tool-reliability registry, hallucination checks, persistent agent memory, and x402 paywalls, in one server.
 
 **100+ tools** across 12 live services. The first four are generated automatically from each service's own live `openapi.json`, so the list always matches what's deployed; the rest are hand-written because they use wallet signatures and non-`/v1` routes:
@@ -24,6 +26,8 @@ Plus **6 resources** (the platform directory, `llms.txt`, and each service's liv
 These tools never sign anything or hold a key. Agents with no wallet can still try Wicked Identity end to end through a sandbox identity (`identity_sandbox_register`, then pass `sandbox_token` instead of a signature); sandbox results are for testing and are never reported as verified. Identity (real wallet), Registry registration and Memory take a signature you produce with your own wallet (`identity_get_nonce` / `memory_prepare` return the exact message to sign). Calls that need x402 payment return the real `402` challenge (decoded under `payment_required` for x402 v2) rather than auto-paying — `WICKEDAPI_PAYER_PRIVATE_KEY` auto-pay applies to the Trading, Protocol Health, Token Risk and Broker Sync tools.
 
 ## Remote endpoint (no install)
+
+Also listed on [Smithery](https://smithery.ai/servers/wickedapi/wicked-mcp), the official MCP Registry (`io.github.WickedAPI/wicked-mcp`) and Glama.
 
 The same 107 tools are served over streamable HTTP at **`https://mcp.wickedapi.com/mcp`** (stateless, rate-limited per IP; the public deployment carries no personal keys, so paid calls return the x402 challenge). Point any streamable-HTTP MCP client at it. To self-host, build the `Dockerfile` and run it with `node dist/http.js` (the image defaults to the stdio entry point), or `npm run build && npm run start:http`; see `.env.example` for `RATE_LIMIT_PER_MINUTE`, `ALLOWED_HOSTS` and `TRUSTED_CLIENT_IP_HEADER`.
 
