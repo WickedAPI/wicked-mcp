@@ -9,6 +9,7 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { clientKey } from "./clientIp.js";
 import { fairSnapshot, withClient } from "./fair.js";
 import { rateLimited } from "./rateLimit.js";
+import { ICONS } from "./icons.js";
 import { landingHtml, llmsTxt, serverCard } from "./landing.js";
 import { knownTools, usageHooks, usageSnapshot } from "./usage.js";
 import { buildServer, loadWorld, SERVER_VERSION } from "./server.js";
@@ -65,6 +66,11 @@ async function main() {
     const host = (req.headers.host || "").toLowerCase();
     if (!ALLOWED_HOSTS.includes(host)) return send(res, 421, { error: "Invalid Host header" });
     if (req.method === "GET" || req.method === "HEAD") {
+      const icon = ICONS[url.pathname];
+      if (icon) {
+        res.writeHead(200, { "content-type": icon.type, "cache-control": "public, max-age=86400", "content-length": icon.data.length });
+        return res.end(req.method === "HEAD" ? undefined : icon.data);
+      }
       if (url.pathname === "/") return sendText(res, "text/html", landingHtml(tools, SERVER_VERSION));
       if (url.pathname === "/llms.txt") return sendText(res, "text/plain", llmsTxt(tools, SERVER_VERSION));
       if (url.pathname === "/.well-known/mcp/server-card.json" || url.pathname === "/.well-known/mcp.json") {
