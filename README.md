@@ -1,6 +1,6 @@
 # WickedAPI MCP Server
 
-[![smithery badge](https://smithery.ai/badge/wickedapi/wicked-mcp)](https://smithery.ai/servers/wickedapi/wicked-mcp)
+[![smithery badge](https://smithery.ai/badge/wickedapi/wicked-mcp)](https://smithery.ai/servers/wickedapi/wicked-mcp) [![LightNow capabilities](https://lightnow.ai/badge/io.github.WickedAPI/wicked-mcp)](https://lightnow.ai/servers/io.github.WickedAPI/wicked-mcp)
 
 MCP server for the whole [Wicked](https://wickedapi.com) suite — trading data, DeFi protocol health, token safety, brokerage sync, agent identity, reputation, a tool-reliability registry, hallucination checks, persistent agent memory, and x402 paywalls, in one server.
 
