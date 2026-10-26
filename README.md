@@ -1,5 +1,6 @@
 # WickedAPI MCP Server
 
+[![WickedAPI/wicked-mcp MCP server](https://glama.ai/mcp/servers/WickedAPI/wicked-mcp/badges/score.svg)](https://glama.ai/mcp/servers/WickedAPI/wicked-mcp)
 [![smithery badge](https://smithery.ai/badge/wickedapi/wicked-mcp)](https://smithery.ai/servers/wickedapi/wicked-mcp)
 
 MCP server for the whole [Wicked](https://wickedapi.com) suite — trading data, DeFi protocol health, token safety, brokerage sync, agent identity, reputation, a tool-reliability registry, hallucination checks, persistent agent memory, and x402 paywalls, in one server.
@@ -27,7 +28,7 @@ These tools never sign anything or hold a key. Agents with no wallet can still t
 
 ## Remote endpoint (no install)
 
-Also listed on [Smithery](https://smithery.ai/servers/wickedapi/wicked-mcp), the official MCP Registry (`io.github.WickedAPI/wicked-mcp`) and Glama.
+Also listed on [Glama](https://glama.ai/mcp/servers/WickedAPI/wicked-mcp), the official MCP Registry (`io.github.WickedAPI/wicked-mcp`) and [Smithery](https://smithery.ai/servers/wickedapi/wicked-mcp).
 
 The same 107 tools are served over streamable HTTP at **`https://mcp.wickedapi.com/mcp`** (stateless, rate-limited per IP; the public deployment carries no personal keys, so paid calls return the x402 challenge). Point any streamable-HTTP MCP client at it. To self-host, build the `Dockerfile` and run it with `node dist/http.js` (the image defaults to the stdio entry point), or `npm run build && npm run start:http`; see `.env.example` for `RATE_LIMIT_PER_MINUTE`, `ALLOWED_HOSTS` and `TRUSTED_CLIENT_IP_HEADER`.
 
