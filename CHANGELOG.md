@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.4
+- The hosted server now serves favicons and an apple-touch icon, and the landing page declares them (plus Open Graph tags), so directory listings (Smithery, Glama) show the Wicked icon instead of a generic one.
+- README carries the Smithery badge (npm page included).
+
 ## 0.7.3
 - Fix: the eight `paywall_*` tenant tools pointed at the paywall gateway host and returned 404. They now use the tenant API (`paywall-admin.wickedapi.com`; override with `PAYWALL_BASE_URL`).
 - New tool `paywall_demo_weather`: shows a real x402 challenge from the paywall gateway's demo route (`PAYWALL_GATEWAY_URL` to override).
