@@ -126,3 +126,16 @@ test("paywall tools hit the tenant API (paywall-admin), and the demo route retur
   for (const p of ["counterparty_check", "insider_watch", "trade_idea_check"]) assert.ok(prompts.some((x) => x.name === p), `missing prompt ${p}`);
   await c.close();
 });
+
+test("the landing page declares icons and the server serves them (directory listings build their icon from these)", async () => {
+  const base = `http://localhost:${PORT}`;
+  const html = await (await fetch(`${base}/`)).text();
+  assert.match(html, /rel="icon"[^>]*href="\/favicon\.ico"/);
+  assert.match(html, /og:image/);
+  for (const [path, type] of [["/favicon.ico", "image/x-icon"], ["/favicon-32x32.png", "image/png"], ["/apple-touch-icon.png", "image/png"]]) {
+    const r = await fetch(`${base}${path}`);
+    assert.equal(r.status, 200, path);
+    assert.equal(r.headers.get("content-type"), type);
+    assert.ok((await r.arrayBuffer()).byteLength > 400, `${path} should not be empty`);
+  }
+});

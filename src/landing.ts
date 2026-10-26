@@ -91,6 +91,8 @@ export function landingHtml(tools: string[], version: string): string {
     .join("\n");
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Wicked MCP</title><meta name="description" content="One MCP server for the whole Wicked suite: ${tools.length} tools for agents.">
+<link rel="icon" type="image/x-icon" href="/favicon.ico"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"><link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:title" content="Wicked MCP"><meta property="og:description" content="One MCP server for the whole Wicked suite: ${tools.length} tools for agents. No signup."><meta property="og:type" content="website"><meta property="og:url" content="https://mcp.wickedapi.com/"><meta property="og:image" content="https://mcp.wickedapi.com/apple-touch-icon.png">
 <style>:root{color-scheme:light dark;--bg:#fff;--fg:#14171f;--mut:#5b6472;--card:#f4f6fa;--acc:#6d28d9}@media(prefers-color-scheme:dark){:root{--bg:#0e1117;--fg:#e8ebf2;--mut:#98a2b3;--card:#181d27;--acc:#a78bfa}}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,sans-serif}main{max-width:760px;margin:0 auto;padding:32px 16px}h1{margin:0 0 4px}p.l{color:var(--mut);margin-top:0}
 pre{background:var(--card);padding:12px 14px;border-radius:8px;overflow:auto;font-size:14px}details{background:var(--card);border-radius:8px;padding:10px 14px;margin:8px 0}summary{cursor:pointer}summary span{color:var(--acc);margin:0 8px;font-size:14px}summary em{display:block;color:var(--mut);font-style:normal;font-size:14px}
