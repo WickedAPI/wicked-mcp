@@ -14,7 +14,7 @@ import { landingHtml, llmsTxt, serverCard } from "./landing.js";
 import { knownTools, usageHooks, usageSnapshot } from "./usage.js";
 import { buildServer, loadWorld, SERVER_VERSION } from "./server.js";
 import { configuredKeys } from "./suite.js";
-import { captureServerError, flushSentry, initSentry } from "./observability.js";
+import { captureServerError, flushSentry, initSentry, isClientAbort } from "./observability.js";
 
 initSentry(SERVER_VERSION);
 
@@ -108,6 +108,7 @@ async function main() {
       // Attach the caller's rate-limit key so tool handlers can apply per-client fair-use limits.
       await withClient(clientKey(req), () => transport.handleRequest(req, res, body));
     } catch (err) {
+      if (isClientAbort(err)) return; // the caller hung up mid-request: nothing to report or answer
       const status = (err as { status?: number }).status ?? 500;
       // Only server faults: 4xx here are client mistakes (bad JSON, oversized body).
       if (status >= 500) captureServerError(err, { path: url.pathname, method: req.method });

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.5
+- The hosted server no longer reports client disconnects (`aborted`, `ECONNRESET`) to Sentry; they are normal network events, not faults.
+- Sentry releases are now named `wicked-mcp@<version>`.
+
 ## 0.7.4
 - The hosted server now serves favicons and an apple-touch icon, and the landing page declares them (plus Open Graph tags), so directory listings (Smithery, Glama) show the Wicked icon instead of a generic one.
 - README carries the Smithery badge (npm page included).

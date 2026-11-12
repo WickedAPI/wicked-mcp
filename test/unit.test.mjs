@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { normalizeIp } from "../dist/clientIp.js";
 import { rateLimited } from "../dist/rateLimit.js";
 import { __test } from "../dist/suite.js";
-import { scrubEvent } from "../dist/observability.js";
+import { isClientAbort, scrubEvent } from "../dist/observability.js";
 
 test("normalizeIp: v4, mapped v6, /64 grouping, junk", () => {
   assert.equal(normalizeIp("203.0.113.9"), "203.0.113.9");
@@ -46,4 +46,13 @@ test("scrubEvent: drops request bodies and redacts auth headers", () => {
   assert.equal(out.request.headers["X-API-Key"], "[redacted]");
   assert.equal(out.request.headers["payment-signature"], "[redacted]");
   assert.equal(out.request.headers["user-agent"], "ua");
+});
+
+test("isClientAbort: client hang-ups are noise, real errors are not", () => {
+  assert.equal(isClientAbort(new Error("aborted")), true);
+  assert.equal(isClientAbort(Object.assign(new Error("read ECONNRESET"), { code: "ECONNRESET" })), true);
+  assert.equal(isClientAbort(Object.assign(new Error("x"), { code: "ERR_STREAM_PREMATURE_CLOSE" })), true);
+  assert.equal(isClientAbort(new Error("No service specs loaded")), false);
+  assert.equal(isClientAbort(new TypeError("boom")), false);
+  assert.equal(isClientAbort(undefined), false);
 });

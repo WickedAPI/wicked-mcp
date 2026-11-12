@@ -16,6 +16,13 @@ const SENSITIVE_HEADERS = new Set([
   "payment-signature",
 ]);
 
+/** A client that hangs up mid-request makes Node throw "aborted" (or ECONNRESET) while the body is read.
+ *  That is a normal network event, not a server fault, so it is never reported. */
+export function isClientAbort(err: unknown): boolean {
+  const e = err as { message?: string; code?: string } | null | undefined;
+  return e?.message === "aborted" || e?.code === "ECONNRESET" || e?.code === "ERR_STREAM_PREMATURE_CLOSE";
+}
+
 export function scrubEvent<T extends Sentry.ErrorEvent>(event: T): T {
   const req = event.request;
   if (req) {
@@ -37,7 +44,7 @@ export function initSentry(version: string): boolean {
   Sentry.init({
     dsn,
     environment: process.env.SENTRY_ENVIRONMENT || "production",
-    release: `wickedapi-mcp@${version}`,
+    release: `wicked-mcp@${version}`,
     tracesSampleRate: 0,
     // v11 collects headers, bodies, query strings and stack-frame variables by
     // default. Turn everything off; beforeSend below is defense in depth.
@@ -51,7 +58,8 @@ export function initSentry(version: string): boolean {
       databaseQueryData: false,
       queues: false,
     },
-    beforeSend: scrubEvent,
+    // Backstop: drop client disconnects that surface through Sentry's own instrumentation, then scrub.
+    beforeSend: (event, hint) => (isClientAbort(hint?.originalException) ? null : scrubEvent(event)),
   });
   return true;
 }
