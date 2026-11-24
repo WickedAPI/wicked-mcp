@@ -1,6 +1,7 @@
 # WickedAPI MCP Server
 
 [![WickedAPI/wicked-mcp MCP server](https://glama.ai/mcp/servers/WickedAPI/wicked-mcp/badges/score.svg)](https://glama.ai/mcp/servers/WickedAPI/wicked-mcp)
+[![Wicked MCP MCP connector](https://glama.ai/mcp/connectors/io.github.WickedAPI/wicked-mcp/badges/score.svg)](https://glama.ai/mcp/connectors/io.github.WickedAPI/wicked-mcp)
 [![smithery badge](https://smithery.ai/badge/wickedapi/wicked-mcp)](https://smithery.ai/servers/wickedapi/wicked-mcp)
 
 MCP server for the whole [Wicked](https://wickedapi.com) suite — trading data, DeFi protocol health, token safety, brokerage sync, agent identity, reputation, a tool-reliability registry, hallucination checks, persistent agent memory, and x402 paywalls, in one server.
