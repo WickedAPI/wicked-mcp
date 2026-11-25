@@ -93,6 +93,7 @@ const USAGE: Record<string, Usage> = {
   registry_search_tools: { u: "you want to find x402/MCP tools filtered by category, protocol or minimum reliability score.", n: "a quick free check of a known tool (use registry_lookup)." },
   registry_tool_detail: { u: "you want one tool's full score breakdown and recent real health checks.", n: "finding tools (use registry_search_tools or registry_lookup)." },
   registry_lookup: { u: "you want a free lookup of a tool's id and headline score by name, URL fragment or exact endpoint before you call it.", n: "full detail (use registry_tool_detail)." },
+  registry_check_tool: { u: "you are about to call or pay a tool at a URL and want a free live check plus its registry score and a verdict first.", n: "browsing or ranking tools (use registry_search_tools), or a score-only lookup (use registry_lookup)." },
   registry_featured_tools: { u: "you want the top-scored active tools with no key or payment.", n: "filtered search (use registry_search_tools)." },
   registry_tool_badge: { u: "you want one tool's current composite score as a free badge.", n: "the breakdown (use registry_tool_detail)." },
   registry_report_tool: { u: "a tool misbehaved and you want to file a complaint for manual review.", n: "reading scores." },
