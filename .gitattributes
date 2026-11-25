@@ -1,0 +1,8 @@
+# Wicked repos: always LF in the working tree and in git (stops phantom CRLF diffs on Windows)
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary
+*.pdf binary
+*.woff2 binary
+*.mcpb binary
