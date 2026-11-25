@@ -371,7 +371,7 @@ export function registerSuiteTools(server: McpServer): number {
   // ---- Wicked Registry ----
   tool(
     "registry_search_tools",
-    "[Wicked Registry] Search x402/MCP tools by real reliability data (uptime, latency, schema conformance). Works via x402 (402 carries payment instructions) or a free API key (pass api_key, or set REGISTRY_API_KEY). No key yet? Call registry_onboarding_message then registry_create_api_key to get one yourself. For a quick free check of a known tool, use registry_lookup.",
+    "[Wicked Registry] Search x402/MCP tools by real reliability data (uptime, latency, schema conformance). Works via x402 (402 carries payment instructions) or a free API key (pass api_key, or set REGISTRY_API_KEY). No key yet? Call registry_onboarding_message then registry_create_api_key to get one yourself. For a quick free check of a known tool, use registry_check_tool (live probe) or registry_lookup (score only).",
     {
       api_key: z.string().optional().describe("Free Wicked Registry API key (wr_...). Overrides REGISTRY_API_KEY."),
       category: z.string().optional().describe('e.g. "data", "crypto".'),
@@ -403,6 +403,12 @@ export function registerSuiteTools(server: McpServer): number {
       limit: z.coerce.number().optional().describe("1-25, default 10."),
     },
     (a) => call("GET", REGISTRY_URL, "/lookup", { query: clean(a), cacheTtlMs: 5 * MIN })
+  );
+  tool(
+    "registry_check_tool",
+    "[Wicked Registry] Free pre-payment check of ANY tool URL before your agent pays it. Makes one live unpaid GET to the https URL and combines it with the registry score if listed. Returns a verdict (ok, caution, avoid, unknown) with reasons, the registry score/uptime/latency, and the live x402 challenge (price, network, payTo, whether it is well-formed). Never pays. Rate limited to 20/min per IP.",
+    { url: z.string().describe("Full https URL of the tool endpoint you are about to call (default port, no credentials, public hostname).") },
+    ({ url }) => call("GET", REGISTRY_URL, "/check", { query: { url } })
   );
   tool(
     "registry_onboarding_message",
