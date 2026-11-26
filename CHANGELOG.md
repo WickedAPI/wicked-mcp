@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.7.6
+- New tool `registry_check_tool`: a free pre-payment check an agent can run on a tool or URL before paying for it (Wicked Registry).
+
 ## 0.7.5
 - The hosted server no longer reports client disconnects (`aborted`, `ECONNRESET`) to Sentry; they are normal network events, not faults.
 - Sentry releases are now named `wicked-mcp@<version>`.
